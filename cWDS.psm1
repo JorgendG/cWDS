@@ -86,7 +86,7 @@ enum Ensure
                 Write-Verbose "Boot image, importing"
                 Import-WdsBootImage -Path $this.Path    
             }
-            elseif( -not (Get-WdsInstallImageGroup -Name $this.GroupName) )
+            elseif( -not (Get-WdsInstallImageGroup -Name $this.GroupName -ErrorAction SilentlyContinue  ) )
             {
                 Write-Verbose "Creating ImageGroup"
                 New-WdsInstallImageGroup -Name $this.groupname
@@ -123,12 +123,12 @@ enum Ensure
         if( $this.GroupName -eq $null )
         {
             Write-Verbose "Test BootImage"
-            $image = Get-WdsBootImage -ImageName $this.ImageName
+            $image = Get-WdsBootImage -ImageName $this.ImageName -ErrorAction SilentlyContinue
         }
         else
         {
             Write-Verbose "Test InstallImage"
-            $image = Get-WdsInstallImage -ImageName $this.ImageName
+            $image = Get-WdsInstallImage -ImageName $this.ImageName -ErrorAction SilentlyContinue
         }
 
         if ($this.Ensure -eq  [Ensure]::Present)
@@ -149,12 +149,12 @@ enum Ensure
         if( $this.GroupName -eq $null )
         {
             Write-Verbose "Get BootImage"
-            $image = Get-WdsBootImage -ImageName $this.ImageName
+            $image = Get-WdsBootImage -ImageName $this.ImageName -ErrorAction SilentlyContinue
         }
         else
         {
             Write-Verbose "Get InstallImage"
-            $image = Get-WdsInstallImage -ImageName $this.ImageName
+            $image = Get-WdsInstallImage -ImageName $this.ImageName -ErrorAction SilentlyContinue
         }
 
         if( $null -ne $image.Name )
