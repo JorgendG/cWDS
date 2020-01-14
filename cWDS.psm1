@@ -19,6 +19,7 @@ enum Ensure
         if ($this.Ensure -eq  [Ensure]::Present)
         {
             & wdsutil.exe /initialize-server /reminst:"$($this.RootFolder)" /standalone
+            & WDSUTIL.exe /Set-Server /Transport /EnableTftpVariableWindowExtension:No
         }
         elseif ($this.Ensure  -eq [Ensure]::Absent)
         {
