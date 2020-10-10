@@ -76,13 +76,16 @@ enum Ensure
     [DscProperty()]
     [String]$Path
 
+    [DscProperty()]
+    [String]$Unattendfile
+
     ## What to do if it's  not in the right state. This returns nothing, indicated by [void].
 
     [void] Set() 
     {
         if ($this.Ensure -eq  [Ensure]::Present)
         {
-            if( $this.GroupName -eq $null )
+            if( $null -eq $this.GroupName )
             {
                 Write-Verbose "Boot image, importing"
                 Import-WdsBootImage -Path $this.Path    
@@ -100,10 +103,19 @@ enum Ensure
                 Write-Verbose "Install image, importing"
                 Import-WdsInstallImage -Path $this.Path -ImageName $this.ImageName -ImageGroup $this.GroupName
             }
+            if( $null -ne $this.Unattendfile -and $null -ne $this.GroupName )
+            {
+                [xml]$xml = Get-Content C:\windows\temp\unattend.xml
+                $winpe = $xml.unattend.settings | Where-Object{ $_.pass -eq 'windowsPE' }
+                $winpe.component.Where( {$_.name -eq 'Microsoft-Windows-Setup'} ).WindowsDeploymentServices.ImageSelection.InstallImage.ImageName = $this.ImageName
+                $winpe.component.Where( {$_.name -eq 'Microsoft-Windows-Setup'} ).WindowsDeploymentServices.ImageSelection.InstallImage.ImageGroup = $this.GroupName
+                $xml.Save( "C:\remoteinstall\WdsClientUnattend\$($this.Unattendfile)" )
+            }
+
         }
         elseif ($this.Ensure  -eq [Ensure]::Absent)
         {
-            if( $this.GroupName -eq $null )
+            if( $null -eq $this.GroupName )
             {
                 Write-Verbose "Removing BootImage"
                 Remove-WdsBootImage -ImageName $this.ImageName
@@ -121,7 +133,7 @@ enum Ensure
   [bool] Test() 
     {
         #
-        if( $this.GroupName -eq $null )
+        if( $null -eq $this.GroupName )
         {
             Write-Verbose "Test BootImage"
             $image = Get-WdsBootImage -ImageName $this.ImageName -ErrorAction SilentlyContinue
@@ -134,7 +146,7 @@ enum Ensure
 
         if ($this.Ensure -eq  [Ensure]::Present)
         {
-            return $image -ne $null
+            return $null -ne $image
         }
         else
         {
@@ -147,7 +159,7 @@ enum Ensure
     [cWDSInstallImage] Get() 
     {
         #
-        if( $this.GroupName -eq $null )
+        if( $null -eq $this.GroupName )
         {
             Write-Verbose "Get BootImage"
             $image = Get-WdsBootImage -ImageName $this.ImageName -ErrorAction SilentlyContinue
