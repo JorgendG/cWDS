@@ -254,3 +254,55 @@ enum Ensure
     }
    
 }
+
+[DscResource()]  class cDSCModule ##  MyFolder is the name of the resource
+{
+    [DscProperty(Mandatory)]
+    [Ensure]$Ensure
+
+    [DscProperty(Key)]
+    [String]$DSCModule
+
+    ## What to do if it's  not in the right state. This returns nothing, indicated by [void].
+
+    [void] Set() 
+    {
+        if ($this.Ensure -eq  [Ensure]::Present)
+        {
+            Install-Module -Name $this.DSCModule -Force
+            $module = Get-Module $this.DSCModule -ListAvailable
+            $module | Publish-ModuleToPullServer -PullServerWebConfig "$env:SystemDrive\inetpub\PSDSCPullServer\web.config"
+        }
+        elseif ($this.Ensure  -eq [Ensure]::Absent)
+        {
+            # remove module
+        }
+    }
+
+  ## Test to ensure  it's in the right state. This returns a Boolean value, indicated by [bool].
+
+  [bool] Test() 
+    {
+        #
+        if ($null -eq (Get-Module $this.DSCModule -ListAvailable)) {
+            return $False
+        }
+        if( (Test-Path "C:\pullserver\Modules\$($this.DSCModule)_*.zip") -eq $False )
+        {
+            return $False
+        }
+        return $true
+    }
+
+  ## Get the state.  This returns an instance of the class itself, indicated by [cDSCModule]
+
+    [cDSCModule] Get() 
+    {
+        #
+        $installeddscmodule = Get-Module xPendingReboot -ListAvailable
+        return @{
+             
+            'ModuleVersion' = $installeddscmodule.Version 
+        }
+    }
+}
