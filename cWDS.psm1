@@ -306,3 +306,42 @@ enum Ensure
         }
     }
 }
+
+[DscResource()]  class cVMName ##  MyFolder is the name of the resource
+{
+    [DscProperty(Mandatory)]
+    [Ensure]$Ensure
+
+    [DscProperty(Key)]
+    [String]$DSCModule
+
+    ## What to do if it's  not in the right state. This returns nothing, indicated by [void].
+
+    [void] Set() 
+    {
+        $regvalue = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters" -Name "VirtualMachineName" -ErrorAction SilentlyContinue
+        $Computername = ($regvalue.VirtualMachineName -split ':')[0]
+        Rename-Computer -NewName $Computername -Force
+    }
+
+  ## Test to ensure  it's in the right state. This returns a Boolean value, indicated by [bool].
+
+  [bool] Test() 
+    {
+        #
+        $regvalue = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters" -Name "VirtualMachineName" -ErrorAction SilentlyContinue
+        $Computername = ($regvalue.VirtualMachineName -split ':')[0]
+        return ( $env:COMPUTERNAME -eq $Computername)
+    }
+
+  ## Get the state.  This returns an instance of the class itself, indicated by [cDSCModule]
+
+    [cVMName] Get() 
+    {
+        #
+        return @{
+             
+            'ComputerName' = $env:COMPUTERNAME
+        }
+    }
+}
