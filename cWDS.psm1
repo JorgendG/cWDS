@@ -69,6 +69,8 @@ enum Ensure {
     [DscProperty()]
     [String]$Unattendfile
 
+    [DscProperty()]
+    [String]$SrcUnattendfile
     ## What to do if it's  not in the right state. This returns nothing, indicated by [void].
 
     [void] Set() {
@@ -89,7 +91,7 @@ enum Ensure {
                 Import-WdsInstallImage -Path $this.Path -ImageName $this.ImageName -ImageGroup $this.GroupName
             }
             if ( $null -ne $this.Unattendfile -and $null -ne $this.GroupName ) {
-                [xml]$xml = Get-Content C:\windows\temp\unattend.xml
+                [xml]$xml = Get-Content $this.SrcUnattendfile
                 $winpe = $xml.unattend.settings | Where-Object { $_.pass -eq 'windowsPE' }
                 $winpe.component.Where( { $_.name -eq 'Microsoft-Windows-Setup' } ).WindowsDeploymentServices.ImageSelection.InstallImage.ImageName = $this.ImageName
                 $winpe.component.Where( { $_.name -eq 'Microsoft-Windows-Setup' } ).WindowsDeploymentServices.ImageSelection.InstallImage.ImageGroup = $this.GroupName
