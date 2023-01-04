@@ -305,7 +305,7 @@ enum Ensure {
     [String]$Filename
 
     [DscProperty(Mandatory)]
-    [Ensure]$WDSCredential
+    [pscredential]$WDSCredential
 
     ## What to do if it's  not in the right state. This returns nothing, indicated by [void].
 
