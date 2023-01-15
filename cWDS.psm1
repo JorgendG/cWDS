@@ -477,7 +477,6 @@ enum Ensure {
                     <UserAccounts>
                         <AdministratorPassword>
                             <Value/>
-                            <PlainText>false</PlainText>
                         </AdministratorPassword>
                     </UserAccounts>
                     <OOBE>
